@@ -32,14 +32,12 @@ class _NavTogglesState extends State<NavToggles> {
               minHeight: 35,
             ),
             onPressed: (index) {
-              setState(
-                () {
-                  for (int i = 0; i < _isSelected.length; i++) {
-                    _isSelected[i] = i == index;
-                  }
-                  _activeTabIndex = index;
-                },
-              );
+              setState(() {
+                for (int i = 0; i < _isSelected.length; i++) {
+                  _isSelected[i] = i == index;
+                }
+                _activeTabIndex = index;
+              });
             },
             children: const [
               Text('Room'),
@@ -48,38 +46,34 @@ class _NavTogglesState extends State<NavToggles> {
           ),
         ),
         const SizedBox(height: 20),
-        IndexedStack(
-          index: _activeTabIndex,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 25, horizontal: 25),
-              child: Wrap(
-                direction: Axis.horizontal,
-                spacing: 20,
-                runSpacing: 20,
-                children: [
-                  Smartcard(imagePath: 'lib/assets/quarto.png',title:  'Master Bedroom',subtitle:  '4 Devices'),
-                  Smartcard(imagePath: 'lib/assets/quarto.png',title:  'Master Bedroom',subtitle:  '4 Devices'),
-                  Smartcard(imagePath: 'lib/assets/quarto.png',title:  'Master Bedroom',subtitle:  '4 Devices'),
-                  Smartcard(imagePath: 'lib/assets/quarto.png',title:  'Master Bedroom',subtitle:  '4 Devices'),
-                  Smartcard(imagePath: 'lib/assets/quarto.png',title:  'Master Bedroom',subtitle:  '4 Devices'),
-                  Smartcard(imagePath: 'lib/assets/quarto.png',title:  'Master Bedroom',subtitle:  '4 Devices'),
-                  
-                ],
-              ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          transitionBuilder: (widget, animation) => FadeTransition(
+            opacity: animation,
+            child: widget,
+          ),
+          child: Padding(
+            key: ValueKey<int>(_activeTabIndex),
+            padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
+            child: Wrap(
+              direction: Axis.horizontal,
+              spacing: 20,
+              runSpacing: 20,
+              children: _activeTabIndex == 0
+                  ? List.generate(6, (index) => Smartcard(
+                        imagePath: 'lib/assets/quarto.png',
+                        title: 'Master Bedroom',
+                        subtitle: '4 Devices',
+                        type: "room",
+                      ))
+                  : List.generate(6, (index) => Smartcard(
+                        imagePath: 'lib/assets/aaaipad.png',
+                        title: 'Heater',
+                        subtitle: '4 Devices',
+                        type: "device",
+                      )),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 25, horizontal: 25),
-              child: Wrap(
-                direction: Axis.horizontal,
-                spacing: 20,
-                runSpacing: 20,
-                children: [
-                  
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );
