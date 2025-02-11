@@ -1,44 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  void _loadUser() {
+    setState(() {
+      _user = _auth.currentUser;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F6FA),
+      backgroundColor: const Color(0xFFF5F6FA),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
-            // Perfil
-            SizedBox(height: 25,),
+            const SizedBox(height: 25),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [Color(0xFF9288E4), Color(0xFF6E8EF3)],
                 ),
               ),
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/profile.jpg'), // Substitua pela imagem do usuário
+                    backgroundImage: AssetImage('assets/profile.jpg'),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
-                    "John Doe",
-                    style: TextStyle(
+                    _user?.displayName ?? "Usuário",
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    "john.doe@example.com",
-                    style: TextStyle(
+                    _user?.email ?? "Email não disponível",
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
                     ),
@@ -46,16 +66,20 @@ class ProfilePage extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            // Opções do perfil
+            const SizedBox(height: 20),
             Expanded(
               child: ListView(
                 children: [
-                  _buildOptionButton(Icons.person, "Editar Perfil"),
-                  _buildOptionButton(Icons.notifications, "Notificações"),
-                  _buildOptionButton(Icons.security, "Privacidade"),
-                  _buildOptionButton(Icons.help, "Ajuda e Suporte"),
-                  _buildOptionButton(Icons.logout, "Sair", isLogout: true),
+                  _buildOptionButton(Icons.person, "Editar Perfil", () {}),
+                  _buildOptionButton(Icons.notifications, "Notificações", () {}),
+                  _buildOptionButton(Icons.security, "Privacidade", () {}),
+                  _buildOptionButton(Icons.help, "Ajuda e Suporte", () {}),
+                  _buildOptionButton(
+                    Icons.logout,
+                    "Sair",
+                    () => _logout(context),
+                    isLogout: true,
+                  ),
                 ],
               ),
             ),
@@ -65,37 +89,53 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildOptionButton(IconData icon, String title, {bool isLogout = false}) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: isLogout ? Colors.red : Colors.black),
-          SizedBox(width: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: isLogout ? Colors.red : Colors.black,
+  Widget _buildOptionButton(IconData icon, String title, VoidCallback onTap, {bool isLogout = false}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      splashColor: Colors.grey.withOpacity(0.3),
+      highlightColor: Colors.grey.withOpacity(0.1),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
             ),
-          ),
-          Spacer(),
-          Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
-        ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isLogout ? Colors.red : Colors.black),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: isLogout ? Colors.red : Colors.black,
+              ),
+            ),
+            const Spacer(),
+            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 16),
+          ],
+        ),
       ),
     );
+  }
+
+  void _logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erro ao sair: $e")),
+      );
+    }
   }
 }
